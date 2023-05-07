@@ -1,11 +1,16 @@
 package com.itonse.dividend.web;
 
 import com.itonse.dividend.model.Company;
+import com.itonse.dividend.persist.entity.CompanyEntity;
 import com.itonse.dividend.service.CompanyService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/company")   // 공통 경로
@@ -20,8 +25,9 @@ public class CompanyController {
     }
 
     @GetMapping  // 회사리스트 조회 API
-    public ResponseEntity<?> searchCompany() {
-        return null;
+    public ResponseEntity<?> searchCompany(final Pageable pageable) {    // 페이지 기능 추가
+        Page<CompanyEntity> companies = this.companyService.getAllCompany(pageable);
+        return ResponseEntity.ok(companies);
     }
 
     @PostMapping   // 회사 저장 API

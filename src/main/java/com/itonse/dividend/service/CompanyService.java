@@ -8,6 +8,8 @@ import com.itonse.dividend.persist.entity.CompanyEntity;
 import com.itonse.dividend.persist.entity.DividendEntity;
 import com.itonse.dividend.scraper.Scraper;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -30,8 +32,11 @@ public class CompanyService {
         return this.storeCompanyAndDividend(ticker);    // 존재하지 않는다면 저장 후, 받은 결과값을 반환
     }
 
+    public Page<CompanyEntity> getAllCompany(Pageable pageable) {     // 저장한 전체 회사 조회
+        return this.companyRepository.findAll(pageable);
+    }
 
-    private Company storeCompanyAndDividend(String ticker) {   // DB에 ticker에 해당하는 회사 정보를 저장한 후, 그 Company 인스턴스를 반환
+    private Company storeCompanyAndDividend(String ticker) {   // DB에 ticker 에 해당하는 회사 정보를 저장한 후, 그 Company 인스턴스를 반환
         // ticker 를 기준으로 회사를 스크래핑
         Company company = this.yahooFinanceScraper.scrapCompanyByTicker(ticker);
         if (ObjectUtils.isEmpty(company)) {    // company 정보가 있는지 확인
@@ -43,10 +48,10 @@ public class CompanyService {
 
         // 스크래핑 결과
         CompanyEntity companyEntity = this.companyRepository.save(new CompanyEntity(company));// 레파지토리에는 company 가 아닌 companyEntity 타입이 저장 되어야 함.
-        List<DividendEntity> dividendEntityList = scrapedResult.getDividends().stream()   // getDividends 는 Dividend 의 리스트
+        List<DividendEntity> dividendEntities = scrapedResult.getDividends().stream()   // getDividends 는 Dividend 의 리스트
                                                 .map(e -> new DividendEntity(companyEntity.getId(), e))    // e: 위 리스트의 Dividend 객체들.  Dividend -> DividendEntity 맵핑
                                                 .collect(Collectors.toList());//  결과값을 지정한 리스트 타입으로 반환
-        this.dividendRepository.saveAll(dividendEntityList);   // 레파지토리에 모두 저장
+        this.dividendRepository.saveAll(dividendEntities);   // 레파지토리에 모두 저장
         return company;   // 저장한 회사 정보를 반환
     }
 }
