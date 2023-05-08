@@ -8,7 +8,9 @@ import com.itonse.dividend.persist.entity.CompanyEntity;
 import com.itonse.dividend.persist.entity.DividendEntity;
 import com.itonse.dividend.scraper.Scraper;
 import lombok.AllArgsConstructor;
+import org.apache.commons.collections4.Trie;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -18,8 +20,9 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class CompanyService {
+public class CompanyService {    // SpringBoot의 빈 -> 싱글톤
 
+    private final Trie trie;   // 트라이
     private final Scraper yahooFinanceScraper;
     private final CompanyRepository companyRepository;
     private final DividendRepository dividendRepository;
@@ -53,5 +56,30 @@ public class CompanyService {
                                                 .collect(Collectors.toList());//  결과값을 지정한 리스트 타입으로 반환
         this.dividendRepository.saveAll(dividendEntities);   // 레파지토리에 모두 저장
         return company;   // 저장한 회사 정보를 반환
+    }
+
+    public List<String> getCompanyNamesByKeyword(String keyword) {    // LIKE 연산
+        Pageable limit = PageRequest.of(0, 10);    // 한 번에 10개씩만 가져오기
+        Page<CompanyEntity> companyEntities = this.companyRepository.findByNameStartingWithIgnoreCase(keyword, limit);
+        return companyEntities.stream()   // company 엔티티에 있는 회사명들 추출
+                                .map(e -> e.getName())
+                                .collect(Collectors.toList());
+
+    }
+
+    public void addAutocompleteKeyword(String keyword) {
+        this.trie.put(keyword, null);    // 트라이에 회사명 저장
+    }
+
+    public List<String> autocomplete(String keyword) {   // 자동완성 기능 (트라이에서 단어를 찾아오는 로직)
+        return (List<String>) this.trie.prefixMap(keyword).keySet()
+                .stream()
+                .limit(10)    // 최대 10개  가져오기
+                .collect(Collectors.toList());
+    }
+
+    // 트라이에 저장된 키워드 삭제
+    public void deleteAutocompleteKeyword(String keyword) {
+        this.trie.remove(keyword);
     }
 }

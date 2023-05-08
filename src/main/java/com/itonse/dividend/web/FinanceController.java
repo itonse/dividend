@@ -1,6 +1,5 @@
 package com.itonse.dividend.web;
 
-import com.itonse.dividend.model.ScrapedResult;
 import com.itonse.dividend.service.FinanceService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

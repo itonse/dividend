@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/company")   // 공통 경로
@@ -20,8 +19,9 @@ public class CompanyController {
     private final CompanyService companyService;
 
     @GetMapping("/autocomplete")    // 배당금 검색할 때 자동완성 기능 API
-    public ResponseEntity<?> autocomplete(@RequestParam String keyword) {
-        return null;
+    public ResponseEntity<?> autocomplete(@RequestParam String keyword) {    // LIKE 연산 사용
+        var result = this.companyService.getCompanyNamesByKeyword(keyword);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping  // 회사리스트 조회 API
@@ -38,6 +38,7 @@ public class CompanyController {
         }
 
         Company company = this.companyService.save(ticker);    // ticker 에 해당하는 회사를 저장한 후, 반환 된 회사정보를 저장
+        this.companyService.addAutocompleteKeyword(company.getName());  // 회사를 저장 할 때 마다 트라이에 회사명이 저장 됨.
         return ResponseEntity.ok(company);   // ResponseEntity 에 회사정보 반환
     }
 
