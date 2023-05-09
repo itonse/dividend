@@ -35,6 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {   // 요청�
             Authentication auth = this.tokenProvider.getAuthentication(token);  // 토큰이 유효하다면
             SecurityContextHolder.getContext().setAuthentication(auth);  // 인증정보를 Context 에 담는다.
 
+            log.info(String.format("[%s] -> %s", this.tokenProvider.getUsername(token), request.getRequestURL()));  // '사용자명 -> 요청경로' 정보 로그 남김
         }
 
         filterChain.doFilter(request, response);  // 유효하지 않다면, 바로 실행

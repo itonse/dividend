@@ -41,7 +41,7 @@ public class ScraperScheduler {
             ScrapedResult scrapedResult = this.yahooFinanceScraper.scrap(
                     new Company(company.getTicker(), company.getName()));   // company 는 companyEntity 타입이라 맵핑 필요
 
-        // 스크래핑한 배당금 정보 중 데이터베이스에 없는 값은 저장
+            // 스크래핑한 배당금 정보 중 데이터베이스에 없는 값은 저장
             scrapedResult.getDividends().stream()     //  scrapedResult 에는 List<Dividend> 가 들어있음.
                     // Dividend -> devidendEntity 맵핑
                     .map(e -> new DividendEntity(company.getId(), e))
@@ -50,6 +50,7 @@ public class ScraperScheduler {
                         boolean exists = this.dividendRepository.existsByCompanyIdAndDate(e.getCompanyId(), e.getDate());  // DB에서 존재 여부 확인
                         if (!exists) {
                             this.dividendRepository.save(e);   // 존재하지 않은 값 들만 저장
+                            log.info("insert new dividend -> " + e.toString());
                         }
                     });
 

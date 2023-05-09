@@ -29,7 +29,7 @@ public class AuthController {
     public ResponseEntity<?> signin(@RequestBody Auth.SignIn request) {
         var member = this.memberService.authenticate(request);   // 로그인시 검증
         var token = this.tokenProvider.generateToken(member.getUsername(), member.getRoles());  // 토큰 값 생성
-
+        log.info("user login -> " + request.getUsername());   // 로그인한 사용자 이름 남김
         return ResponseEntity.ok(token);   // 토큰 반환
     }
 
