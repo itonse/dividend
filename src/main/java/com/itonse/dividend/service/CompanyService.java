@@ -82,4 +82,15 @@ public class CompanyService {    // SpringBoot의 빈 -> 싱글톤
     public void deleteAutocompleteKeyword(String keyword) {
         this.trie.remove(keyword);
     }
+
+    public String deleteCompany(String ticker) {    // 회사 삭제 기능
+        var company = this.companyRepository.findByTicker(ticker)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 회사입니다."));
+
+        this.dividendRepository.deleteAllByCompanyId(company.getId());  // 1.해당 id를 가진 dividend 엔티티들은 모두 삭제
+        this.companyRepository.delete(company);   // 2.회사 정보 삭제
+
+        this.deleteAutocompleteKeyword(company.getName());   //  3.트라이(자동완성)에 저장된 데이터까지 삭제
+        return company.getName();
+    }
 }

@@ -1,9 +1,11 @@
 package com.itonse.dividend.web;
 
 import com.itonse.dividend.model.Company;
+import com.itonse.dividend.model.constants.CacheKey;
 import com.itonse.dividend.persist.entity.CompanyEntity;
 import com.itonse.dividend.service.CompanyService;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class CompanyController {
 
     private final CompanyService companyService;
+    private final CacheManager redisCacheManager;
 
     @GetMapping("/autocomplete")    // 배당금 검색할 때 자동완성 기능 API
     public ResponseEntity<?> autocomplete(@RequestParam String keyword) {    // LIKE 연산 사용
@@ -47,11 +50,18 @@ public class CompanyController {
 
         Company company = this.companyService.save(ticker);    // ticker 에 해당하는 회사를 저장한 후, 반환 된 회사정보를 저장
         this.companyService.addAutocompleteKeyword(company.getName());  // 회사를 저장 할 때 마다 트라이에 회사명이 저장 됨.
-        return ResponseEntity.ok(company);   // ResponseEntity 에 회사정보 반환
+        return ResponseEntity.ok(company);   //  회사정보로 응답
     }
 
-    @DeleteMapping    // 저장했던 회사 삭제 API
-    public ResponseEntity<?> deleteCompany() {
-        return null;
+    @DeleteMapping("/{ticker}")   // 저장했던 회사 삭제 API
+    @PreAuthorize("hasRole('WRITE')")
+    public ResponseEntity<?> deleteCompany(@PathVariable String ticker) {
+        String companyName = this.companyService.deleteCompany(ticker);  // 1. 회사 삭제하고 이름 저장
+        this.clearFinanceCache(companyName);   // 2. 캐시에서도 company 데이터 지우기
+        return ResponseEntity.ok(companyName);   // 지운 회사이름을 응답
+    }
+
+    public void clearFinanceCache(String companyName) {
+        this.redisCacheManager.getCache(CacheKey.KEY_FINANCE).evict(companyName);
     }
 }

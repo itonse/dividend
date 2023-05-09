@@ -14,5 +14,7 @@ public interface CompanyRepository extends JpaRepository<CompanyEntity, Long> { 
 
     Optional<CompanyEntity> findByName(String name);   // 회사명으로 회사의 정보를 찾음  (null 일 때를 방지하기 위해 Optional 타입으로 반환)
 
+    Optional<CompanyEntity> findByTicker(String ticker);
+
     Page<CompanyEntity> findByNameStartingWithIgnoreCase(String s, Pageable pageable);    // LIKE 연산자 사용
 }
