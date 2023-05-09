@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,12 +26,19 @@ public class CompanyController {
     }
 
     @GetMapping  // 회사리스트 조회 API
+    @PreAuthorize("hasRole('READ')")  // 읽기권한이 있는 유저만 해당 API 를 호출 하능하게 제한을 걸음.
     public ResponseEntity<?> searchCompany(final Pageable pageable) {    // 페이지 기능 추가
         Page<CompanyEntity> companies = this.companyService.getAllCompany(pageable);
         return ResponseEntity.ok(companies);
     }
 
+    /**
+     * 회사 및 배당금 정보 추가
+     * @param request
+     * @return
+     */
     @PostMapping   // 회사 저장 API
+    @PreAuthorize("hasRole('WRITE')")  // 쓰기권한이 있는 유저만 해당 API 를 호출 하능하게 제한을 걸음.
     public ResponseEntity<?> addCompany(@RequestBody Company request) {
         String ticker = request.getTicker().trim();   // 앞 뒤 공백 제거
         if (ObjectUtils.isEmpty(ticker)) {    // ticker 값을 빈 값으로 입력한 경우 에러 발생
