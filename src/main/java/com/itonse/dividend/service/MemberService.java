@@ -1,5 +1,6 @@
 package com.itonse.dividend.service;
 
+import com.itonse.dividend.exception.impl.AlreadyExistUserException;
 import com.itonse.dividend.model.Auth;
 import com.itonse.dividend.persist.entity.MemberEntity;
 import com.itonse.dividend.persist.MemberRepository;
@@ -27,7 +28,7 @@ public class MemberService implements UserDetailsService {
     public MemberEntity register(Auth.SignUp member) {  // 회원가입 기능
         boolean exists = this.memberRepository.existsByUsername(member.getUsername());
         if (exists) {
-            throw new RuntimeException("이미 사용 중인 아이디 입니다.");
+            throw new AlreadyExistUserException();
         }
 
         member.setPassword(this.passwordEncoder.encode(member.getPassword()));  // 민감 정보인 패스워드는 인코딩된 값으로 저장

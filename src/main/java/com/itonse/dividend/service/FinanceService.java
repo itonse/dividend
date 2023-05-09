@@ -1,5 +1,6 @@
 package com.itonse.dividend.service;
 
+import com.itonse.dividend.exception.impl.NoCompanyException;
 import com.itonse.dividend.model.Company;
 import com.itonse.dividend.model.Dividend;
 import com.itonse.dividend.model.ScrapedResult;
@@ -30,7 +31,7 @@ public class FinanceService {
         log.info("search company -> " + companyName);   // DB 에서 조회 할 때만 로그가 찍히고, 캐시에서 조회할 때는 로그가 찍히지 않는다.
         // 1. 회사명을 기준으로 회사 정보를 조회 by companyRepository
         CompanyEntity company = this.companyRepository.findByName(companyName)
-                                                 .orElseThrow(() -> new RuntimeException("존재하지 않는 회사명입니다."));  // 값이 없으면 런타임 에러 발생
+                                                 .orElseThrow(() -> new NoCompanyException());  // 값이 없으면 익셉션 발생
 
         // 2. 조회된 회사 ID로 배당금을 조회
         List<DividendEntity> dividendEntities = this.dividendRepository.findAllByCompanyId(company.getId());
